@@ -1,0 +1,6 @@
+com/motor/erp/controller/AuthController.class
+com/motor/erp/model/User.class
+com/motor/erp/MainApp.class
+com/motor/erp/config/DatabaseConfig.class
+com/motor/erp/controller/VehicleController.class
+com/motor/erp/model/Vehicle.class
