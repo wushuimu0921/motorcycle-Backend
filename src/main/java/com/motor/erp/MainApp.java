@@ -1,6 +1,7 @@
 package com.motor.erp;
 
 import com.motor.erp.controller.AuthController;
+import com.motor.erp.controller.PurchaseController;
 import com.motor.erp.controller.VehicleController;
 import io.javalin.Javalin;
 
@@ -21,6 +22,10 @@ public class MainApp {
         app.post("/api/vehicles/register", VehicleController::register);
         app.get("/api/vehicles", VehicleController::getAll);
         app.post("/api/login", AuthController::login);
+        app.post("/api/purchase", PurchaseController::createInvoice);
+        app.get("/api/purchase", PurchaseController::getInvoices);
+        app.get("/api/purchase/{id}", PurchaseController::getInvoiceDetails);
+        app.put("/api/purchase/{id}", PurchaseController::updateInvoice);
 
         System.out.println("=== 系統已啟動：http://localhost:8080 ===");
     }

@@ -38,7 +38,7 @@ public class VehicleController {
 
     public static void getAll(Context ctx) {
         List<Vehicle> vehicles = new ArrayList<>();
-        String sql = "SELECT vin, model_name, engine_no, status FROM vehicles ORDER BY created_at DESC";
+        String sql = "SELECT vin, model_name, engine_no, status, color FROM vehicles ";
 
         try (Connection conn = DatabaseConfig.getDataSource().getConnection();
              Statement stmt = conn.createStatement();
@@ -49,7 +49,8 @@ public class VehicleController {
                         rs.getString("vin"),
                         rs.getString("model_name"),
                         rs.getString("engine_no"),
-                        rs.getString("status")
+                        rs.getString("status"),
+                        rs.getString("color")
                 ));
             }
 
