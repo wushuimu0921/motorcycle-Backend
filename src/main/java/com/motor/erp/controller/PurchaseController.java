@@ -88,29 +88,51 @@ public class PurchaseController {
     }
     // 1. 查詢進車單列表
     public static void getInvoices(Context ctx) {
+        // 1. 取得分頁參數 (給予預設值)
+        int page = ctx.queryParamAsClass("page", Integer.class).getOrDefault(1);
+        int pageSize = ctx.queryParamAsClass("pageSize", Integer.class).getOrDefault(10);
         String supplier = ctx.queryParam("supplier");
+
+        int offset = (page - 1) * pageSize;
         List<Map<String, Object>> list = new ArrayList<>();
+        int total = 0;
 
-        String sql = "SELECT * FROM purchase_invoices WHERE 1=1 ";
-        if (supplier != null && !supplier.isEmpty()) sql += " AND supplier LIKE ?";
-        sql += " ORDER BY purchase_date DESC";
+        try (Connection conn = DatabaseConfig.getDataSource().getConnection()) {
+            // A. 先查詢總筆數 (用於前端分頁器顯示總數)
+            String countSql = "SELECT COUNT(*) FROM purchase_invoices WHERE 1=1 ";
+            if (supplier != null && !supplier.isEmpty()) countSql += " AND supplier LIKE ?";
 
-        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-
-            if (supplier != null && !supplier.isEmpty()) pstmt.setString(1, "%" + supplier + "%");
-
-            ResultSet rs = pstmt.executeQuery();
-            while (rs.next()) {
-                list.add(Map.of(
-                        "id", rs.getInt("id"),
-                        "invoice_no", rs.getString("invoice_no"),
-                        "purchase_date", rs.getDate("purchase_date").toString(),
-                        "supplier", rs.getString("supplier"),
-                        "total_amount", rs.getDouble("total_amount")
-                ));
+            try (PreparedStatement pstmt = conn.prepareStatement(countSql)) {
+                if (supplier != null && !supplier.isEmpty()) pstmt.setString(1, "%" + supplier + "%");
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) total = rs.getInt(1);
             }
-            ctx.json(list);
+
+            // B. 查詢該頁數據
+            String sql = "SELECT * FROM purchase_invoices WHERE 1=1 ";
+            if (supplier != null && !supplier.isEmpty()) sql += " AND supplier LIKE ?";
+            sql += " ORDER BY purchase_date DESC LIMIT ? OFFSET ?";
+
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                int paramIdx = 1;
+                if (supplier != null && !supplier.isEmpty()) pstmt.setString(paramIdx++, "%" + supplier + "%");
+                pstmt.setInt(paramIdx++, pageSize);
+                pstmt.setInt(paramIdx++, offset);
+
+                ResultSet rs = pstmt.executeQuery();
+                while (rs.next()) {
+                    list.add(Map.of(
+                            "id", rs.getInt("id"),
+                            "invoice_no", rs.getString("invoice_no"),
+                            "purchase_date", rs.getDate("purchase_date").toString(),
+                            "supplier", rs.getString("supplier"),
+                            "total_amount", rs.getDouble("total_amount")
+                    ));
+                }
+            }
+
+            // 回傳包含數據與總數的物件
+            ctx.json(Map.of("data", list, "total", total));
         } catch (SQLException e) {
             ctx.status(500).result(e.getMessage());
         }
