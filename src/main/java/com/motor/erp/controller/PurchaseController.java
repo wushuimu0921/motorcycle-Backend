@@ -210,4 +210,33 @@ public class PurchaseController {
             ctx.status(500).result("資料庫連線錯誤");
         }
     }
+    /**
+     * GET /api/purchase/master/{id}
+     * 獲取進車單主表資訊
+     */
+    public static void getInvoiceMaster(Context ctx) {
+        int id = Integer.parseInt(ctx.pathParam("id"));
+
+        String sql = "SELECT id, invoice_no, purchase_date, supplier FROM purchase_invoices WHERE id = ?";
+
+        try (Connection conn = DatabaseConfig.getDataSource().getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, id);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                ctx.json(Map.of(
+                        "id", rs.getInt("id"),
+                        "invoice_no", rs.getString("invoice_no"),
+                        "purchase_date", rs.getDate("purchase_date").toString(),
+                        "supplier", rs.getString("supplier")
+                ));
+            } else {
+                ctx.status(404).result("找不到該筆進車單");
+            }
+        } catch (SQLException e) {
+            ctx.status(500).result("資料庫查詢失敗: " + e.getMessage());
+        }
+    }
 }

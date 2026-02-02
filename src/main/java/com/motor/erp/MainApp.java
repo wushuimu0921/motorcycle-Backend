@@ -19,14 +19,14 @@ public class MainApp {
         app.get("/", ctx -> ctx.result("機車進銷存系統 API 運作中"));
 
         // 車輛相關 API
+        app.post("/api/login", AuthController::login);
         app.post("/api/vehicles/register", VehicleController::register);
         app.get("/api/vehicles", VehicleController::getAll);
-        app.post("/api/login", AuthController::login);
         app.post("/api/purchase", PurchaseController::createInvoice);
         app.get("/api/purchase", PurchaseController::getInvoices);
         app.get("/api/purchase/{id}", PurchaseController::getInvoiceDetails);
         app.put("/api/purchase/{id}", PurchaseController::updateInvoice);
-
+        app.get("/api/purchase/master/{id}", PurchaseController::getInvoiceMaster);
         System.out.println("=== 系統已啟動：http://localhost:8080 ===");
     }
 }
