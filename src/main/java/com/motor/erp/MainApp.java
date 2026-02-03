@@ -1,8 +1,6 @@
 package com.motor.erp;
 
-import com.motor.erp.controller.AuthController;
-import com.motor.erp.controller.PurchaseController;
-import com.motor.erp.controller.VehicleController;
+import com.motor.erp.controller.*;
 import io.javalin.Javalin;
 
 public class MainApp {
@@ -27,6 +25,10 @@ public class MainApp {
         app.get("/api/purchase/{id}", PurchaseController::getInvoiceDetails);
         app.put("/api/purchase/{id}", PurchaseController::updateInvoice);
         app.get("/api/purchase/master/{id}", PurchaseController::getInvoiceMaster);
+        app.get("/api/download/template", DownloadController::downloadTemplate);
+        app.post("/api/purchase/import", ImportController::importExcel);
+        app.post("/api/purchase/preview", ImportController::previewExcel);
+
         System.out.println("=== 系統已啟動：http://localhost:8080 ===");
     }
 }
