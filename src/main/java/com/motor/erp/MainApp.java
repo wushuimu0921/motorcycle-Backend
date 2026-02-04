@@ -1,6 +1,7 @@
 package com.motor.erp;
 
 import com.motor.erp.controller.*;
+import com.motor.erp.middleware.LogMiddleware;
 import io.javalin.Javalin;
 
 public class MainApp {
@@ -12,6 +13,15 @@ public class MainApp {
                 cors.addRule(it -> it.anyHost());
             });
         }).start(8080);
+
+        // 1. 在處理請求前執行
+        app.before(LogMiddleware::logRequest);
+
+        // 2. 在處理請求後執行 (不論成功或失敗)
+        app.after(LogMiddleware::logResponse);
+
+        // 3. 全域異常攔截
+        app.exception(Exception.class, LogMiddleware::handleException);
 
         // 定義 API 路由
         app.get("/", ctx -> ctx.result("機車進銷存系統 API 運作中"));
