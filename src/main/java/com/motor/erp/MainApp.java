@@ -38,7 +38,8 @@ public class MainApp {
         app.get("/api/download/template", DownloadController::downloadTemplate);
         app.post("/api/purchase/import", ImportController::importExcel);
         app.post("/api/purchase/preview", ImportController::previewExcel);
-
+        app.post("/api/sales", SalesController::createSale);
+        app.get("/api/inventory/available", InventoryController::getAvailableInventory);
         System.out.println("=== 系統已啟動：http://localhost:8080 ===");
     }
 }
