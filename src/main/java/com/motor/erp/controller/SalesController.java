@@ -7,6 +7,9 @@ import io.javalin.http.Context;
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
 
+import java.util.List;
+import java.util.Map;
+
 public class SalesController {
     public static void createSale(Context ctx) {
         SaleRequest req = ctx.bodyAsClass(SaleRequest.class);
@@ -41,6 +44,39 @@ public class SalesController {
             ctx.status(201).result("銷貨成功");
         } catch (Exception e) {
             ctx.status(500).result("銷貨失敗: " + e.getMessage());
+        }
+    }
+    public static void getSalesHistory(Context ctx) {
+        Sql2o sql2o = DatabaseConfig.getSql2o();
+        try (Connection conn = sql2o.open()) {
+            // 查詢主表，按日期降冪排列
+            String sql = "SELECT id, invoice_no, customer_name, customer_phone, sale_date, total_amount " +
+                    "FROM sales_invoices ORDER BY sale_date DESC, id DESC";
+
+            List<Map<String, Object>> history = conn.createQuery(sql)
+                    .executeAndFetchTable()
+                    .asList();
+
+            ctx.json(history);
+        }
+    }
+
+    public static void getSaleDetail(Context ctx) {
+        int invoiceId = Integer.parseInt(ctx.pathParam("id"));
+        Sql2o sql2o = DatabaseConfig.getSql2o();
+        try (Connection conn = sql2o.open()) {
+            // 關聯查詢銷貨明細與車輛基本資料
+            String sql = "SELECT v.vin, v.model_name, v.color, si.sale_price " +
+                    "FROM sales_items si " +
+                    "JOIN vehicles v ON si.vin = v.vin " +
+                    "WHERE si.invoice_id = :iId";
+
+            List<Map<String, Object>> details = conn.createQuery(sql)
+                    .addParameter("iId", invoiceId)
+                    .executeAndFetchTable()
+                    .asList();
+
+            ctx.json(details);
         }
     }
 }

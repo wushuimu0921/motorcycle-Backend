@@ -40,6 +40,8 @@ public class MainApp {
         app.post("/api/purchase/preview", ImportController::previewExcel);
         app.post("/api/sales", SalesController::createSale);
         app.get("/api/inventory/available", InventoryController::getAvailableInventory);
+        app.get("/api/sales/history", SalesController::getSalesHistory);
+        app.get("/api/sales/history/{id}", SalesController::getSaleDetail);
         System.out.println("=== 系統已啟動：http://localhost:8080 ===");
     }
 }
